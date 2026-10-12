@@ -14,13 +14,11 @@ image.alt = "A teal tile with a cream circle";
 image.width = 96;
 image.height = 96;
 
-let counter = 0;
-
 // button
 const button = document.createElement("button") as HTMLButtonElement;
 button.innerText = "Click Me";
 button.addEventListener("click", () => {
-  counter++;
+  alert("Button clicked!");
 });
 
 const message = document.createElement("p");
