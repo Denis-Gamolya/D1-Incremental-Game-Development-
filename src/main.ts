@@ -14,7 +14,7 @@ image.alt = "A teal tile with a cream circle";
 image.width = 96;
 image.height = 96;
 
-let counter = 0;
+let resourceCounter = 0;
 
 const counterDisplay = document.createElement("p");
 counterDisplay.textContent = "Clicks: 0";
@@ -23,9 +23,14 @@ counterDisplay.textContent = "Clicks: 0";
 const button = document.createElement("button") as HTMLButtonElement;
 button.innerText = "Click Me";
 button.addEventListener("click", () => {
-  counter++;
-  counterDisplay.textContent = `Clicks: ${counter}`;
+  resourceCounter++;
+  counterDisplay.textContent = `Clicks: ${resourceCounter.toFixed(2)}`;
 });
+
+setInterval(() => {
+  resourceCounter += 0.1;
+  counterDisplay.textContent = `Clicks: ${resourceCounter.toFixed(2)}`;
+}, 1000);
 
 const message = document.createElement("p");
 message.textContent = "Your project starts here.";
