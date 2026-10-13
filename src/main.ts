@@ -14,14 +14,20 @@ image.alt = "A teal tile with a cream circle";
 image.width = 96;
 image.height = 96;
 
+let counter = 0;
+
+const counterDisplay = document.createElement("p");
+counterDisplay.textContent = "Clicks: 0";
+
 // button
 const button = document.createElement("button") as HTMLButtonElement;
 button.innerText = "Click Me";
 button.addEventListener("click", () => {
-  alert("Button clicked!");
+  counter++;
+  counterDisplay.textContent = `Clicks: ${counter}`;
 });
 
 const message = document.createElement("p");
 message.textContent = "Your project starts here.";
 
-app.append(heading, image, message, button);
+app.append(heading, image, message, counterDisplay, button);
