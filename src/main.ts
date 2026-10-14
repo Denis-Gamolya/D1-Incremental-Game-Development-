@@ -18,31 +18,61 @@ app.style.background = "#f5f0ff";
 const heading = document.createElement("h1");
 heading.textContent = "D1 project";
 
+// shared interface for upgrades
+interface Upgrade {
+  kind: "click" | "passive";
+  emoji: string;
+  baseCost: number;
+  cost: number;
+  level: number;
+  baseGain: number;
+}
+
 let resourceCounter = 0;
-let upgradeClickCost = 25;
-let firstUpgradeCost = 10;
-let secondUpgradeCost = 100;
-let thirdUpgradeCost = 1000;
 let clickValue = 1;
 let passiveProduction = 0;
-let clickUpgradeLevel = 0;
-let firstUpgradeLevel = 0;
-let secondUpgradeLevel = 0;
-let thirdUpgradeLevel = 0;
 const growthRate = 1.15;
 
-// scales cost based on current cost and upgrade level
-function scaleCost(baseCost: number, level: number) {
-  return parseFloat((baseCost * Math.pow(growthRate, level + 1)).toFixed(2));
-}
+// array of upgrades with their initial values
+const upgrades: Upgrade[] = [
+  {
+    kind: "click",
+    emoji: "👆",
+    baseCost: 25,
+    cost: 25,
+    level: 0,
+    baseGain: 1,
+  },
+  {
+    kind: "passive",
+    emoji: "🧶",
+    baseCost: 10,
+    cost: 10,
+    level: 0,
+    baseGain: 0.5,
+  },
+  {
+    kind: "passive",
+    emoji: "🪶",
+    baseCost: 100,
+    cost: 100,
+    level: 0,
+    baseGain: 6,
+  },
+  {
+    kind: "passive",
+    emoji: "🥛",
+    baseCost: 1000,
+    cost: 1000,
+    level: 0,
+    baseGain: 75,
+  },
+];
 
-// calculates the gain from click upgrades
-function getClickUpgradeGain() {
-  return 1 + clickUpgradeLevel * 0.75;
-}
-
-function getPassiveUpgradeGain(baseGain: number, level: number) {
-  return baseGain * (1 + level * 0.9);
+// calculates gain on next purchase based on upgrade level
+function getUpgradeGain(upgrade: Upgrade): number {
+  const levelMultiplier = upgrade.kind === "click" ? 0.75 : 0.9;
+  return upgrade.baseGain * (1 + upgrade.level * levelMultiplier);
 }
 
 const counterDisplay = document.createElement("p");
@@ -72,7 +102,7 @@ clickButton.appendChild(tobyImage);
 clickButton.addEventListener("click", () => {
   resourceCounter += clickValue;
   counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-  canUpgrade();
+  refreshUpgradeLabels();
 });
 
 // pulse effect on click
@@ -84,120 +114,61 @@ clickButton.addEventListener("pointerup", () => {
   clickButton.style.transform = "scale(1)";
 });
 
-// function to check if upgrade button should be enabled/disabled
-function canUpgrade() {
-  if (resourceCounter < upgradeClickCost) {
-    upgradeClickValue.disabled = true;
-  } else {
-    upgradeClickValue.disabled = false;
-  }
-  if (resourceCounter < firstUpgradeCost) {
-    upgradeButton.disabled = true;
-  } else {
-    upgradeButton.disabled = false;
-  }
-  if (resourceCounter < secondUpgradeCost) {
-    upgradeButton2.disabled = true;
-  } else {
-    upgradeButton2.disabled = false;
-  }
-  if (resourceCounter < thirdUpgradeCost) {
-    upgradeButton3.disabled = true;
-  } else {
-    upgradeButton3.disabled = false;
-  }
+// creates one button per upgrade, with its own purchase handler
+const upgradeButtons = upgrades.map((upgrade) => {
+  const button = document.createElement("button") as HTMLButtonElement;
+  button.type = "button";
+
+  button.addEventListener("click", () => {
+    if (resourceCounter < upgrade.cost) {
+      return;
+    }
+
+    const gain = getUpgradeGain(upgrade);
+    resourceCounter -= upgrade.cost;
+
+    if (upgrade.kind === "click") {
+      clickValue += gain;
+    } else {
+      passiveProduction += gain;
+    }
+
+    // recalculate new cost from starting cost to avoid rounding errors
+    upgrade.level += 1;
+    upgrade.cost = Number(
+      (upgrade.baseCost * growthRate ** upgrade.level).toFixed(2),
+    );
+
+    counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
+    refreshUpgradeLabels();
+  });
+
+  return button;
+});
+
+// refreshes each upgrade label after resources change
+function refreshUpgradeLabels(): void {
+  upgrades.forEach((upgrade, index) => {
+    const button = upgradeButtons[index];
+    const gain = getUpgradeGain(upgrade).toFixed(2);
+    const unit = upgrade.kind === "click" ? "per click" : "/sec";
+
+    button.innerText =
+      `${upgrade.emoji} +${gain} ${unit} \n Cost: ${upgrade.cost}`;
+    button.disabled = resourceCounter < upgrade.cost;
+  });
 }
-
-// upgrade click value button
-const upgradeClickValue = document.createElement("button") as HTMLButtonElement;
-upgradeClickValue.innerText = `+1 per click \n Cost: ${upgradeClickCost}`;
-upgradeClickValue.disabled = true;
-upgradeClickValue.addEventListener("click", () => {
-  if (resourceCounter >= upgradeClickCost) {
-    resourceCounter -= upgradeClickCost;
-    clickUpgradeLevel += 1;
-    clickValue += getClickUpgradeGain();
-    upgradeClickCost = scaleCost(25, clickUpgradeLevel - 1);
-    counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-    const nextClickGain = getClickUpgradeGain().toFixed(2);
-    upgradeClickValue.innerText =
-      `+${nextClickGain} per click \n Cost: ${upgradeClickCost}`;
-  }
-});
-
-// upgrade button
-const upgradeButton = document.createElement("button") as HTMLButtonElement;
-upgradeButton.innerText = `+0.5/sec \n Cost: ${firstUpgradeCost}`;
-upgradeButton.disabled = true;
-upgradeButton.addEventListener("click", () => {
-  if (resourceCounter >= firstUpgradeCost) {
-    resourceCounter -= firstUpgradeCost;
-    firstUpgradeLevel += 1;
-    passiveProduction += getPassiveUpgradeGain(0.5, firstUpgradeLevel);
-    firstUpgradeCost = scaleCost(10, firstUpgradeLevel - 1);
-    counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-    const nextFirstGain = getPassiveUpgradeGain(0.5, firstUpgradeLevel)
-      .toFixed(2);
-    upgradeButton.innerText =
-      `+${nextFirstGain}/sec \n Cost: ${firstUpgradeCost}`;
-    canUpgrade();
-  }
-});
-
-// upgrade button 2
-const upgradeButton2 = document.createElement("button") as HTMLButtonElement;
-upgradeButton2.innerText = `+6/sec \n Cost: ${secondUpgradeCost}`;
-upgradeButton2.disabled = true;
-upgradeButton2.addEventListener("click", () => {
-  if (resourceCounter >= secondUpgradeCost) {
-    resourceCounter -= secondUpgradeCost;
-    secondUpgradeLevel += 1;
-    passiveProduction += getPassiveUpgradeGain(6, secondUpgradeLevel);
-    secondUpgradeCost = scaleCost(100, secondUpgradeLevel - 1);
-    counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-    const nextSecondGain = getPassiveUpgradeGain(6, secondUpgradeLevel)
-      .toFixed(2);
-    upgradeButton2.innerText =
-      `+${nextSecondGain}/sec \n Cost: ${secondUpgradeCost}`;
-    canUpgrade();
-  }
-});
-
-// upgrade button 3
-const upgradeButton3 = document.createElement("button") as HTMLButtonElement;
-upgradeButton3.innerText = `+75/sec \n Cost: ${thirdUpgradeCost}`;
-upgradeButton3.disabled = true;
-upgradeButton3.addEventListener("click", () => {
-  if (resourceCounter >= thirdUpgradeCost) {
-    resourceCounter -= thirdUpgradeCost;
-    thirdUpgradeLevel += 1;
-    passiveProduction += getPassiveUpgradeGain(75, thirdUpgradeLevel);
-    thirdUpgradeCost = scaleCost(1000, thirdUpgradeLevel - 1);
-    counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-    const nextThirdGain = getPassiveUpgradeGain(75, thirdUpgradeLevel)
-      .toFixed(2);
-    upgradeButton3.innerText =
-      `+${nextThirdGain}/sec \n Cost: ${thirdUpgradeCost}`;
-    canUpgrade();
-  }
-});
 
 setInterval(() => {
   resourceCounter += passiveProduction;
   counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
-  canUpgrade();
+  refreshUpgradeLabels();
 }, 1000);
 
-const message = document.createElement("p");
-message.textContent = "Your project starts here.";
-
+refreshUpgradeLabels();
 app.append(
   heading,
-  message,
   counterDisplay,
   clickButton,
-  upgradeClickValue,
-  upgradeButton,
-  upgradeButton2,
-  upgradeButton3,
+  ...upgradeButtons,
 );
