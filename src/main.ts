@@ -2,6 +2,8 @@
 // even this tiny example demonstrates a separately deployed asset.
 // @deno-types="./asset-url.d.ts"
 import tobyUrl from "./assets/toby.png?no-inline";
+import kitten from "./assets/kitten.wav";
+import deepKitten from "./assets/deep-kitten.wav";
 
 // formatting
 const app = document.querySelector<HTMLElement>("#app")!;
@@ -108,6 +110,7 @@ clickButton.appendChild(tobyImage);
 clickButton.addEventListener("click", () => {
   resourceCounter += clickValue;
   counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
+  playMeow();
   refreshUpgradeLabels();
 });
 
@@ -163,6 +166,14 @@ function refreshUpgradeLabels(): void {
       `${upgrade.emoji} +${gain} ${unit} \n Cost: ${upgrade.cost}`;
     button.disabled = resourceCounter < upgrade.cost;
   });
+}
+
+function playMeow() {
+  const chance = Math.random() * 10;
+  let meowSound: HTMLAudioElement = null as unknown as HTMLAudioElement;
+  if (chance > 1) meowSound = new Audio(kitten);
+  else meowSound = new Audio(deepKitten);
+  meowSound.play();
 }
 
 setInterval(() => {
