@@ -2,9 +2,15 @@
 // even this tiny example demonstrates a separately deployed asset.
 // @deno-types="./asset-url.d.ts"
 import tobyUrl from "./assets/toby.png?no-inline";
+import backdropUrl from "./assets/backdrop.webp";
 
 // formatting
 const app = document.querySelector<HTMLElement>("#app")!;
+document.body.style.margin = "0";
+document.body.style.backgroundImage = `url(${backdropUrl})`;
+document.body.style.backgroundSize = "cover";
+document.body.style.backgroundRepeat = "no-repeat";
+
 app.style.display = "flex";
 app.style.flexDirection = "column";
 app.style.alignItems = "center";
@@ -14,7 +20,6 @@ app.style.minHeight = "100vh";
 app.style.padding = "2rem";
 app.style.textAlign = "center";
 app.style.fontFamily = "sans-serif";
-app.style.background = "#f5f0ff";
 
 // title
 const heading = document.createElement("h1");
