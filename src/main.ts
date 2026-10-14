@@ -3,6 +3,7 @@
 // @deno-types="./asset-url.d.ts"
 import tobyUrl from "./assets/toby.png?no-inline";
 
+// formatting
 const app = document.querySelector<HTMLElement>("#app")!;
 app.style.display = "flex";
 app.style.flexDirection = "column";
@@ -15,8 +16,9 @@ app.style.textAlign = "center";
 app.style.fontFamily = "sans-serif";
 app.style.background = "#f5f0ff";
 
+// title
 const heading = document.createElement("h1");
-heading.textContent = "D1 project";
+heading.textContent = "Kitty Clicker";
 
 // shared interface for upgrades
 interface Upgrade {
@@ -28,6 +30,7 @@ interface Upgrade {
   baseGain: number;
 }
 
+// resource counter and production values
 let resourceCounter = 0;
 let clickValue = 1;
 let passiveProduction = 0;
@@ -75,9 +78,11 @@ function getUpgradeGain(upgrade: Upgrade): number {
   return upgrade.baseGain * (1 + upgrade.level * levelMultiplier);
 }
 
+// initial display of resources
 const counterDisplay = document.createElement("p");
 counterDisplay.textContent = "Meows: 0";
 
+// create main click button
 const clickButton = document.createElement("button") as HTMLButtonElement;
 clickButton.type = "button";
 clickButton.style.border = "none";
@@ -99,6 +104,7 @@ tobyImage.style.display = "block";
 tobyImage.style.filter = "drop-shadow(0 12px 20px rgba(72, 50, 145, 0.25))";
 clickButton.appendChild(tobyImage);
 
+// handle clicks
 clickButton.addEventListener("click", () => {
   resourceCounter += clickValue;
   counterDisplay.textContent = `Meows: ${resourceCounter.toFixed(2)}`;
